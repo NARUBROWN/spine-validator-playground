@@ -2,7 +2,7 @@
 
 go-playground/validator를 사용하는 Spine DTO 검증 구현입니다. `github.com/NARUBROWN/spine/contract/validator.Validator`를 구현하며, 바인딩한 DTO의 `validate` 태그를 검사하고 필드별 오류를 공통 계약으로 변환합니다.
 
-Spine `v0.6.5`의 `contract/validator`와 `spine.WithValidator`를 사용합니다. 로컬 `replace` 없이 정식 태그에 의존합니다. 기존 v0.6.0 앱은 코어 의존성과 생성식을 함께 갱신하세요.
+현재 개발 버전은 런타임 명세 계약이 포함된 Spine `v0.6.6-0.20261103094217-e4dd8f07ce83`에 의존합니다. [코어 변경 PR #24](https://github.com/NARUBROWN/spine/pull/24)의 공개 커밋을 사용하며 로컬 `replace`는 필요하지 않습니다. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다. 기존 v0.6.0 앱은 코어 의존성과 생성식을 함께 갱신하세요.
 
 Go 1.26.0 이상과 go-playground/validator v10.30.6을 사용합니다. 공통 계약 식별자는 `spine.validation/v1`입니다.
 
@@ -130,3 +130,13 @@ MIT. [LICENSE](LICENSE)를 참고하세요.
 ```sh
 go get github.com/NARUBROWN/spine-validator-playground@v0.1.0
 ```
+
+## 런타임 명세용 규칙 설명
+
+`SchemaDescriber`가 포함된 Spine 코어와 함께 사용하면, 이 검증기는 실제 등록 설정에서 JSON Schema 제약을 제공합니다. 호출자는 같은 `playground.New(...)` 인스턴스를 `spine.WithValidator`에 연결하면 됩니다. 별도의 문서 태그나 검증기 등록은 필요하지 않습니다.
+
+`DescribeSchema(reflect.Type)`는 `Validate`나 사용자 규칙을 실행하지 않습니다. `WithValidationTag`를 반영하며 `WithRule`로 덮어쓴 내장 규칙은 내장 제약으로 추론하지 않습니다. `WithStructRule`과 표현하지 못하는 규칙은 `Unresolved`에 남깁니다. 필드는 Go 인덱스로 연결하므로 JSON·폼 이름은 코어의 바인딩 설명이 결정합니다.
+
+지원 범위는 기본 required, 타입에 따른 min/max·gte/lte·gt/lt·len, oneof, format, 선두 omitempty/omitnil, 컨테이너 dive입니다. format은 일반적인 JSON Schema 형식으로 설명하며 native 검증기의 모든 문법과 판정을 재구현하지 않습니다. 조건부·필드 간·사용자 정의 규칙과 복합 기본값은 완전히 변환하지 않습니다. 진단이 있는 설명은 부분 명세로 사용합니다.
+
+숫자 required의 0 거부, bool required의 false 거부, 포인터 required의 null 거부를 각각 표현합니다. omitempty와 omitnil의 생략 분기는 값 제약과 별도로 설명합니다. 검증 제외 필드와 dive가 없는 컨테이너 내부에는 중첩 DTO 검증을 임의로 적용하지 않습니다.

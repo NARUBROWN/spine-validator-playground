@@ -15,8 +15,11 @@ import (
 // Validator는 생성 시 규칙 등록을 마친 뒤 여러 요청에서 공유하는 검증기입니다.
 // 입력 DTO를 변경하지 않으며, 생성 후 설정을 변경하는 메서드는 제공하지 않습니다.
 type Validator struct {
-	engine    *native.Validate
-	fieldTags []string
+	engine        *native.Validate
+	fieldTags     []string
+	validationTag string
+	customRules   map[string]bool
+	structRules   map[reflect.Type]bool
 }
 
 var _ contract.Validator = (*Validator)(nil)
@@ -47,7 +50,7 @@ func New(options ...Option) (result *Validator, err error) {
 			return nil, fmt.Errorf("%w: rule registration failed", contract.ErrInvalidValidator)
 		}
 	}
-	return &Validator{engine: engine, fieldTags: config.fieldTags}, nil
+	return &Validator{engine: engine, fieldTags: config.fieldTags, validationTag: config.validationTag, customRules: config.customRules, structRules: config.structRules}, nil
 }
 
 // Validate는 바인딩된 DTO의 태그와 사용자 규칙을 실행합니다.

@@ -14,6 +14,8 @@ type configuration struct {
 	fieldTags     []string
 	validationTag string
 	rules         []func(*native.Validate) error
+	customRules   map[string]bool
+	structRules   map[reflect.Type]bool
 }
 
 // Option은 생성 시 한 번 적용하는 검증 설정입니다.
@@ -57,6 +59,10 @@ func WithRule(name string, rule native.FuncCtx) Option {
 		if name == "" || rule == nil {
 			return invalidOption("rule name and function are required")
 		}
+		if c.customRules == nil {
+			c.customRules = map[string]bool{}
+		}
+		c.customRules[name] = true
 		c.rules = append(c.rules, func(v *native.Validate) error { return v.RegisterValidationCtx(name, rule) })
 		return nil
 	}
@@ -82,6 +88,10 @@ func WithStructRule(rule native.StructLevelFuncCtx, types ...any) Option {
 			if t.Kind() != reflect.Struct {
 				return invalidOption("struct rule requires a struct type")
 			}
+			if c.structRules == nil {
+				c.structRules = map[reflect.Type]bool{}
+			}
+			c.structRules[t] = true
 			// native 등록 함수는 typed nil을 역참조하므로 타입 표시를 빈 구조체로 바꿉니다.
 			registered[i] = reflect.New(t).Elem().Interface()
 		}
