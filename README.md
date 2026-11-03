@@ -142,3 +142,9 @@ go get github.com/NARUBROWN/spine-validator-playground@v0.1.0
 숫자 required의 0 거부, bool required의 false 거부, 포인터 required의 null 거부를 각각 표현합니다. omitempty와 omitnil의 생략 분기는 값 제약과 별도로 설명합니다. 검증 제외 필드와 dive가 없는 컨테이너 내부에는 중첩 DTO 검증을 임의로 적용하지 않습니다.
 
 개발 변경에서는 별도 쿼리와 헤더 구조체의 오류 필드 이름도 기본 태그 목록에서 선택합니다. 실제 바인딩 출처와 혼합 DTO 제한은 Spine 코어의 입력 규칙을 따릅니다.
+
+## 요청별 필드 이름
+
+Spine의 요청 컨텍스트에 `contract/validator.WithFieldTags`가 지정되면 이번 호출의 외부 이름에 그 태그 순서를 사용합니다. HTTP 바인딩은 json, form, xml, query 또는 header 중 실제 사용한 태그를 선택합니다. 지정하지 않은 호출은 생성 시 설정한 WithFieldTags 기본값을 유지합니다. 요청별 선택은 검증 규칙이나 공유 엔진의 설정을 변경하지 않습니다.
+
+이 변경은 요청별 필드명 계약을 포함한 Spine 개발 버전과 함께 검증해야 합니다. 공개 배포 전에는 해당 코어 버전으로 의존성을 갱신해야 합니다.
