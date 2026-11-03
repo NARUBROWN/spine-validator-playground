@@ -22,7 +22,7 @@ type configuration struct {
 type Option func(*configuration) error
 
 // WithFieldTags는 공개 필드 이름을 선택할 struct 태그의 우선순위를 지정합니다.
-// 기본은 json, form 순서이며 첫 번째로 존재하는 태그를 사용합니다.
+// 기본은 json, form, query, header 순서이며 첫 번째로 존재하는 태그를 사용합니다.
 func WithFieldTags(tags ...string) Option {
 	tags = slices.Clone(tags)
 	return func(c *configuration) error {

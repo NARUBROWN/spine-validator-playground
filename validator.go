@@ -34,7 +34,7 @@ func New(options ...Option) (result *Validator, err error) {
 			err = fmt.Errorf("%w: rule configuration panicked", contract.ErrInvalidValidator)
 		}
 	}()
-	config := configuration{fieldTags: []string{"json", "form"}, validationTag: "validate"}
+	config := configuration{fieldTags: []string{"json", "form", "query", "header"}, validationTag: "validate"}
 	for _, option := range options {
 		if option == nil {
 			return nil, fmt.Errorf("%w: option is nil", contract.ErrInvalidValidator)

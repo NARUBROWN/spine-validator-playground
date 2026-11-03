@@ -80,7 +80,7 @@ map은 문자열·정수·`encoding.TextMarshaler` 키를 지원합니다. 키�
 
 | 옵션 | 동작 |
 | --- | --- |
-| `WithFieldTags("form", "json")` | 공개 이름 태그의 우선순위. 기본은 `json`, `form`. 첫 번째로 존재하는 태그를 사용하며 이름이 비어 있으면 Go 필드명을 사용 |
+| `WithFieldTags("form", "json")` | 공개 이름 태그의 우선순위. 기본은 `json`, `form`, `query`, `header`. 첫 번째로 존재하는 태그를 사용하며 이름이 비어 있으면 Go 필드명을 사용 |
 | `WithValidationTag("check")` | 규칙을 읽을 태그 이름. 기본은 `validate` |
 | `WithRule(name, native.FuncCtx)` | context를 받는 사용자 필드 규칙 등록 |
 | `WithStructRule(native.StructLevelFuncCtx, types...)` | 필드 간 관계와 DTO 전체 규칙 등록. typed nil 포인터는 타입 표시로 사용 가능 |
@@ -140,3 +140,5 @@ go get github.com/NARUBROWN/spine-validator-playground@v0.1.0
 지원 범위는 기본 required, 타입에 따른 min/max·gte/lte·gt/lt·len, oneof, format, 선두 omitempty/omitnil, 컨테이너 dive입니다. format은 일반적인 JSON Schema 형식으로 설명하며 native 검증기의 모든 문법과 판정을 재구현하지 않습니다. 조건부·필드 간·사용자 정의 규칙과 복합 기본값은 완전히 변환하지 않습니다. 진단이 있는 설명은 부분 명세로 사용합니다.
 
 숫자 required의 0 거부, bool required의 false 거부, 포인터 required의 null 거부를 각각 표현합니다. omitempty와 omitnil의 생략 분기는 값 제약과 별도로 설명합니다. 검증 제외 필드와 dive가 없는 컨테이너 내부에는 중첩 DTO 검증을 임의로 적용하지 않습니다.
+
+개발 변경에서는 별도 쿼리와 헤더 구조체의 오류 필드 이름도 기본 태그 목록에서 선택합니다. 실제 바인딩 출처와 혼합 DTO 제한은 Spine 코어의 입력 규칙을 따릅니다.
