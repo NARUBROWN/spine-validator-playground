@@ -2,7 +2,7 @@
 
 go-playground/validator를 사용하는 Spine DTO 검증 구현입니다. `github.com/NARUBROWN/spine/contract/validator.Validator`를 구현하며, 바인딩한 DTO의 `validate` 태그를 검사하고 필드별 오류를 공통 계약으로 변환합니다.
 
-Spine의 공개 통합 커밋 `6e60b34204d3`에 포함된 `contract/validator`와 `spine.WithValidator`를 사용합니다. go.mod는 이 커밋의 고정 버전 `v0.6.1-0.20261103010611-6e60b34204d3`에 의존하며 로컬 경로의 `replace`는 사용하지 않습니다. 코어 정식 태그에 포함되기 전의 통합 버전이므로, 기존 Spine v0.6.0만 사용하는 앱은 의존성을 함께 갱신해야 합니다.
+Spine `v0.6.5`의 `contract/validator`와 `spine.WithValidator`를 사용합니다. 로컬 `replace` 없이 정식 태그에 의존합니다. 기존 v0.6.0 앱은 코어 의존성과 생성식을 함께 갱신하세요.
 
 Go 1.26.0 이상과 go-playground/validator v10.30.6을 사용합니다. 공통 계약 식별자는 `spine.validation/v1`입니다.
 
@@ -122,3 +122,11 @@ bash scripts/verify-local.sh /path/to/spine
 ## 라이선스
 
 MIT. [LICENSE](LICENSE)를 참고하세요.
+
+## v0.1.0 호환 버전
+
+이 릴리스는 공개 계약을 포함한 Spine `v0.6.5` 이상을 요구합니다. 개인 경로의 `replace` 없이 정식 태그로 설치합니다.
+
+```sh
+go get github.com/NARUBROWN/spine-validator-playground@v0.1.0
+```

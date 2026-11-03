@@ -3,7 +3,7 @@ module github.com/NARUBROWN/spine-validator-playground
 go 1.26.0
 
 require (
-	github.com/NARUBROWN/spine v0.6.1-0.20261103010611-6e60b34204d3
+	github.com/NARUBROWN/spine v0.6.5
 	github.com/go-playground/validator/v10 v10.30.6
 )
 
