@@ -2,7 +2,7 @@
 
 go-playground/validator를 사용하는 Spine DTO 검증 구현입니다. `github.com/NARUBROWN/spine/contract/validator.Validator`를 구현하며, 바인딩한 DTO의 `validate` 태그를 검사하고 필드별 오류를 공통 계약으로 변환합니다.
 
-현재 개발 버전은 런타임 명세 계약이 포함된 Spine `v0.6.6-0.20261103094217-e4dd8f07ce83`에 의존합니다. [코어 변경 PR #24](https://github.com/NARUBROWN/spine/pull/24)의 공개 커밋을 사용하며 로컬 `replace`는 필요하지 않습니다. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다. 기존 v0.6.0 앱은 코어 의존성과 생성식을 함께 갱신하세요.
+현재 작업 소스는 출처별 필드명 계약인 FieldTags가 추가된 코어가 필요합니다. go.mod는 아직 이전 공개 커밋인 Spine `v0.6.6-0.20261103094217-e4dd8f07ce83`에 고정되어 있으므로 공개 의존성만으로 최신 작업 소스를 빌드할 수 없습니다. 코어를 공개한 뒤 고정 버전을 갱신하고 독립 빌드를 검증해야 합니다. 로컬 검증에는 scripts/verify-local.sh를 사용하세요. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다.
 
 Go 1.26.0 이상과 go-playground/validator v10.30.6을 사용합니다. 공통 계약 식별자는 `spine.validation/v1`입니다.
 
@@ -146,5 +146,7 @@ go get github.com/NARUBROWN/spine-validator-playground@v0.1.0
 ## 요청별 필드 이름
 
 Spine의 요청 컨텍스트에 `contract/validator.WithFieldTags`가 지정되면 이번 호출의 외부 이름에 그 태그 순서를 사용합니다. HTTP 바인딩은 json, form, xml, query 또는 header 중 실제 사용한 태그를 선택합니다. 지정하지 않은 호출은 생성 시 설정한 WithFieldTags 기본값을 유지합니다. 요청별 선택은 검증 규칙이나 공유 엔진의 설정을 변경하지 않습니다.
+
+form을 선택한 호출에서는 태그 없는 중첩 값 구조체도 펼친 폼 필드의 오류 경로를 사용합니다. 고정 배열의 dive 제약은 처리할 위치를 prefixItems로 설명합니다. 길이 제약은 디코딩 후 Go 배열의 고정 길이를 기준으로 판단하고, 원소 제약이 기본값을 거부하면 부족한 요청 원소도 명세에서 거부합니다.
 
 이 변경은 요청별 필드명 계약을 포함한 Spine 개발 버전과 함께 검증해야 합니다. 공개 배포 전에는 해당 코어 버전으로 의존성을 갱신해야 합니다.

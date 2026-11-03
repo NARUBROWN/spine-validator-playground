@@ -64,7 +64,7 @@ func (v *Validator) DescribeSchema(t reflect.Type) (contract.SchemaDescription, 
 				encoded, _ := json.Marshal(constraint)
 				result.Fields = append(result.Fields, contract.FieldSchema{Index: index, Required: required, SkipNested: skip, Schema: encoded})
 			}
-			if f.Anonymous && base.Kind() == reflect.Struct && !skip {
+			if base.Kind() == reflect.Struct && !skip {
 				walk(base, index)
 			}
 		}
@@ -110,8 +110,24 @@ func (v *Validator) fieldSchema(t reflect.Type, tag string) (map[string]any, boo
 					dive = false
 					break
 				}
-				child, _, _, issues := v.fieldSchema(base.Elem(), strings.Join(parts[i+1:], ","))
+				child, childRequired, _, issues := v.fieldSchema(base.Elem(), strings.Join(parts[i+1:], ","))
 				unknown = append(unknown, issues...)
+				if base.Kind() == reflect.Array {
+					prefix := make([]any, base.Len())
+					for i := range prefix {
+						prefix[i] = child
+					}
+					clause := map[string]any{}
+					if len(prefix) > 0 {
+						clause["prefixItems"] = prefix
+					}
+					if childRequired && base.Len() > 0 {
+						clause["minItems"] = base.Len()
+						zeroAllowed = false
+					}
+					clauses = append(clauses, clause)
+					break
+				}
 				keyword := "items"
 				if base.Kind() == reflect.Map {
 					keyword = "additionalProperties"
@@ -177,6 +193,27 @@ func (v *Validator) fieldSchema(t reflect.Type, tag string) (map[string]any, boo
 				if err != nil {
 					unknown = append(unknown, part)
 					continue
+				}
+				if base.Kind() == reflect.Array {
+					length := uint64(base.Len())
+					pass := false
+					switch name {
+					case "min", "gte":
+						pass = length >= bound
+					case "max", "lte":
+						pass = length <= bound
+					case "len":
+						pass = length == bound
+					case "gt":
+						pass = length > bound
+					case "lt":
+						pass = length < bound
+					}
+					clause, passZero = map[string]any{}, pass
+					if !pass {
+						clause["not"] = map[string]any{}
+					}
+					break
 				}
 				minimum, maximum := "minLength", "maxLength"
 				if base.Kind() == reflect.Map {
