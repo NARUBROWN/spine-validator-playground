@@ -104,6 +104,13 @@ func (v *Validator) fieldSchema(t reflect.Type, tag string) (map[string]any, boo
 				unknown = append(unknown, "dive on a non-container")
 				break
 			}
+			element := base.Elem()
+			if element.Kind() == reflect.Pointer {
+				element = element.Elem()
+			}
+			if element.Kind() == reflect.Struct {
+				unknown = append(unknown, "dive over struct elements: nested field and struct rules require a separate type description")
+			}
 			if i+1 < len(parts) {
 				if strings.Contains(strings.Join(parts[i+1:], ","), "keys") {
 					unknown = append(unknown, "map key validation")

@@ -91,3 +91,53 @@ func TestCustomBuiltInOverrideIsNotDescribedAsBuiltIn(t *testing.T) {
 	}
 	var _ contract.SchemaDescriber = v
 }
+
+func TestDescriptionReportsStructElementRulesAsPartial(t *testing.T) {
+	type item struct {
+		Name string `validate:"required"`
+	}
+	v, err := New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		name  string
+		value any
+	}{
+		{"slice", struct {
+			Items []item `validate:"dive"`
+		}{Items: []item{{}}}},
+		{"pointer", struct {
+			Items []*item `validate:"dive,required"`
+		}{Items: []*item{{}}}},
+		{"map", struct {
+			Items map[string]item `validate:"dive"`
+		}{Items: map[string]item{"first": {}}}},
+		{"array", struct {
+			Items [2]item `validate:"dive"`
+		}{}},
+		{"nested", struct {
+			Items [][]item `validate:"dive,dive"`
+		}{Items: [][]item{{{}}}}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if err := v.Validate(context.Background(), test.value); err == nil {
+				t.Fatal("원소 구조체의 필수 필드가 검증되어야 합니다")
+			}
+			desc, err := v.DescribeSchema(reflect.TypeOf(test.value))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !strings.Contains(strings.Join(desc.Unresolved, "\n"), "dive over struct elements") {
+				t.Fatalf("원소 구조체의 별도 설명이 필요함을 알려야 합니다: %+v", desc)
+			}
+		})
+	}
+	type scalars struct {
+		Items []string `validate:"dive,required"`
+	}
+	desc, err := v.DescribeSchema(reflect.TypeFor[scalars]())
+	if err != nil || len(desc.Unresolved) != 0 {
+		t.Fatalf("지원하는 일반 원소 규칙은 미해결로 표시하지 않습니다: %+v %v", desc, err)
+	}
+}

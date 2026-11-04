@@ -135,9 +135,9 @@ go get github.com/NARUBROWN/spine-validator-playground@v0.1.0
 
 `SchemaDescriber`가 포함된 Spine 코어와 함께 사용하면, 이 검증기는 실제 등록 설정에서 JSON Schema 제약을 제공합니다. 호출자는 같은 `playground.New(...)` 인스턴스를 `spine.WithValidator`에 연결하면 됩니다. 별도의 문서 태그나 검증기 등록은 필요하지 않습니다.
 
-`DescribeSchema(reflect.Type)`는 `Validate`나 사용자 규칙을 실행하지 않습니다. `WithValidationTag`를 반영하며 `WithRule`로 덮어쓴 내장 규칙은 내장 제약으로 추론하지 않습니다. `WithStructRule`과 표현하지 못하는 규칙은 `Unresolved`에 남깁니다. 필드는 Go 인덱스로 연결하므로 JSON·폼 이름은 코어의 바인딩 설명이 결정합니다.
+`DescribeSchema(reflect.Type)`는 `Validate`나 사용자 규칙을 실행하지 않습니다. `WithValidationTag`를 반영하며 `WithRule`로 덮어쓴 내장 규칙은 내장 제약으로 추론하지 않습니다. `WithStructRule`과 표현하지 못하는 규칙은 `Unresolved`에 남깁니다. 필드는 Go 인덱스로 연결하므로 JSON, 폼 이름은 코어의 바인딩 설명이 결정합니다.
 
-지원 범위는 기본 required, 타입에 따른 min/max·gte/lte·gt/lt·len, oneof, format, 선두 omitempty/omitnil, 컨테이너 dive입니다. format은 일반적인 JSON Schema 형식으로 설명하며 native 검증기의 모든 문법과 판정을 재구현하지 않습니다. 조건부·필드 간·사용자 정의 규칙과 복합 기본값은 완전히 변환하지 않습니다. 진단이 있는 설명은 부분 명세로 사용합니다.
+지원 범위는 기본 required, 타입에 따른 min/max, gte/lte, gt/lt, len, oneof, format, 선두 omitempty/omitnil, 컨테이너 dive입니다. format은 일반적인 JSON Schema 형식으로 설명하며 native 검증기의 모든 문법과 판정을 재구현하지 않습니다. dive로 구조체 원소를 검증하면 원소 타입의 별도 설명이 필요하다는 진단을 남깁니다. 조건부, 필드 간, 사용자 정의 규칙과 복합 기본값은 완전히 변환하지 않습니다. 진단이 있는 설명은 부분 명세로 사용합니다.
 
 숫자 required의 0 거부, bool required의 false 거부, 포인터 required의 null 거부를 각각 표현합니다. omitempty와 omitnil의 생략 분기는 값 제약과 별도로 설명합니다. 검증 제외 필드와 dive가 없는 컨테이너 내부에는 중첩 DTO 검증을 임의로 적용하지 않습니다.
 
