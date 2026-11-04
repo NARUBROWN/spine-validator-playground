@@ -3,3 +3,5 @@ go.work.sum
 .dev.mod
 .dev.sum
 coverage.out
+
+__pycache__/

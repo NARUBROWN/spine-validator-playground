@@ -1,8 +1,10 @@
 # spine-validator-playground
 
+> 이 작업 소스의 대상 버전은 `v0.2.0`이며 Preview, RC, 정식 채널로 발행합니다. [릴리스 운영](RELEASING.md)을 확인하세요. 기존 정식 `v0.1.0`은 변경하지 않습니다.
+
 go-playground/validator를 사용하는 Spine DTO 검증 구현입니다. `github.com/NARUBROWN/spine/contract/validator.Validator`를 구현하며, 바인딩한 DTO의 `validate` 태그를 검사하고 필드별 오류를 공통 계약으로 변환합니다.
 
-현재 작업 소스는 출처별 필드명 계약인 FieldTags가 추가된 코어가 필요합니다. go.mod는 아직 이전 공개 커밋인 Spine `v0.6.6-0.20261103094217-e4dd8f07ce83`에 고정되어 있으므로 공개 의존성만으로 최신 작업 소스를 빌드할 수 없습니다. 코어를 공개한 뒤 고정 버전을 갱신하고 독립 빌드를 검증해야 합니다. 로컬 검증에는 scripts/verify-local.sh를 사용하세요. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다.
+현재 작업 소스는 Spine `v0.7.0-preview.1`에 고정합니다. 이 태그는 코어 후보 발행 단계에서 생성합니다. 발행 전 소스 검증은 임시 workspace 또는 scripts/verify-local.sh를 사용하고, 실제 공개 조합 검증은 태그 발행 후 수행합니다. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다.
 
 Go 1.26.0 이상과 go-playground/validator v10.30.6을 사용합니다. 공통 계약 식별자는 `spine.validation/v1`입니다.
 
