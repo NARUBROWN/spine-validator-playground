@@ -161,7 +161,8 @@ func publicName(field reflect.StructField, tags []string) (name string, flatten 
 	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
-	return field.Name, field.Anonymous && t.Kind() == reflect.Struct, nil
+	formValue := len(tags) == 1 && tags[0] == "form" && field.Type.Kind() == reflect.Struct
+	return field.Name, t.Kind() == reflect.Struct && (field.Anonymous || formValue), nil
 }
 
 func mapKeyName(key reflect.Value) (string, error) {

@@ -286,3 +286,27 @@ func ExampleNew() {
 	// /age gte
 	// /email email
 }
+
+func TestDefaultFieldNamesIncludeQueryAndHeaderTags(t *testing.T) {
+	v, err := playground.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		value any
+		field string
+	}{
+		{struct {
+			Keyword string `query:"q" validate:"required"`
+		}{}, "/q"},
+		{struct {
+			ID string `header:"X-Request-ID" validate:"required"`
+		}{}, "/X-Request-ID"},
+	} {
+		err := v.Validate(context.Background(), test.value)
+		var failure *contract.Error
+		if !errors.As(err, &failure) || len(failure.Fields) != 1 || failure.Fields[0].Field != test.field {
+			t.Fatalf("출처 태그의 검증 오류 경로: %v", err)
+		}
+	}
+}

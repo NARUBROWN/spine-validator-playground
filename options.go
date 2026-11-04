@@ -14,13 +14,15 @@ type configuration struct {
 	fieldTags     []string
 	validationTag string
 	rules         []func(*native.Validate) error
+	customRules   map[string]bool
+	structRules   map[reflect.Type]bool
 }
 
 // Option은 생성 시 한 번 적용하는 검증 설정입니다.
 type Option func(*configuration) error
 
 // WithFieldTags는 공개 필드 이름을 선택할 struct 태그의 우선순위를 지정합니다.
-// 기본은 json, form 순서이며 첫 번째로 존재하는 태그를 사용합니다.
+// 기본은 json, form, query, header 순서이며 첫 번째로 존재하는 태그를 사용합니다.
 func WithFieldTags(tags ...string) Option {
 	tags = slices.Clone(tags)
 	return func(c *configuration) error {
@@ -57,6 +59,10 @@ func WithRule(name string, rule native.FuncCtx) Option {
 		if name == "" || rule == nil {
 			return invalidOption("rule name and function are required")
 		}
+		if c.customRules == nil {
+			c.customRules = map[string]bool{}
+		}
+		c.customRules[name] = true
 		c.rules = append(c.rules, func(v *native.Validate) error { return v.RegisterValidationCtx(name, rule) })
 		return nil
 	}
@@ -82,6 +88,10 @@ func WithStructRule(rule native.StructLevelFuncCtx, types ...any) Option {
 			if t.Kind() != reflect.Struct {
 				return invalidOption("struct rule requires a struct type")
 			}
+			if c.structRules == nil {
+				c.structRules = map[reflect.Type]bool{}
+			}
+			c.structRules[t] = true
 			// native 등록 함수는 typed nil을 역참조하므로 타입 표시를 빈 구조체로 바꿉니다.
 			registered[i] = reflect.New(t).Elem().Interface()
 		}
