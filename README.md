@@ -4,7 +4,7 @@
 
 go-playground/validator를 사용하는 Spine DTO 검증 구현입니다. `github.com/NARUBROWN/spine/contract/validator.Validator`를 구현하며, 바인딩한 DTO의 `validate` 태그를 검사하고 필드별 오류를 공통 계약으로 변환합니다.
 
-현재 작업 소스는 Spine `v0.7.0-preview.1`에 고정합니다. 이 태그는 코어 후보 발행 단계에서 생성합니다. 발행 전 소스 검증은 임시 workspace 또는 scripts/verify-local.sh를 사용하고, 실제 공개 조합 검증은 태그 발행 후 수행합니다. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다.
+현재 작업 소스는 Spine `v0.7.0-preview.4`에 고정합니다. 해당 태그의 발행 상태는 코어의 검증 기록에서 확인합니다. 발행 전 소스 검증은 임시 workspace 또는 scripts/verify-local.sh를 사용하고, 실제 공개 조합 검증은 태그 발행 후 수행합니다. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다.
 
 Go 1.26.0 이상과 go-playground/validator v10.30.6을 사용합니다. 공통 계약 식별자는 `spine.validation/v1`입니다.
 
@@ -40,7 +40,7 @@ type CreateUserDTO struct {
 }
 ```
 
-Spine이 HTTP JSON·폼 DTO 또는 WebSocket·컨슈머 메시지 DTO를 생성한 뒤 검증기를 호출합니다. 이 모듈은 DTO를 직접 바인딩하거나 HTTP 응답·WebSocket 종료·메시지 ACK/NACK을 수행하지 않습니다. 이 전송 정책은 Spine이 소유합니다.
+Spine이 HTTP JSON, 폼 DTO 또는 WebSocket, 컨슈머 메시지 DTO를 생성한 뒤 검증기를 호출합니다. 이 모듈은 DTO를 직접 바인딩하거나 HTTP 응답, WebSocket 종료, 메시지 ACK/NACK을 수행하지 않습니다. 이 전송 정책은 Spine이 소유합니다.
 
 ## 오류 처리
 
@@ -69,14 +69,14 @@ if failure, ok := contract.AsError(err); ok {
 | 정상 DTO | nil |
 | 규칙 위반 | `*contract.Error`. `Field`, `Rule`, `Param`, 일반 설명을 제공 |
 | 구조체나 구조체 포인터가 아닌 값, nil DTO | `contract.ErrInvalidValue`로 감싼 오류 |
-| 잘못된 옵션·태그, 사용자 규칙의 패닉, 공개 경로 매핑 실패 | `contract.ErrInvalidValidator`로 감싼 오류 |
-| context 취소·시간 초과 | `errors.Is`로 원래 context 오류 확인 가능 |
+| 잘못된 옵션, 태그, 사용자 규칙의 패닉, 공개 경로 매핑 실패 | `contract.ErrInvalidValidator`로 감싼 오류 |
+| context 취소, 시간 초과 | `errors.Is`로 원래 context 오류 확인 가능 |
 
-오류의 `Field`는 `/items/0/email` 같은 JSON Pointer입니다. `~`와 `/`는 각각 `~0`, `~1`로 이스케이프합니다. Go 필드명, 중첩 구조체·포인터·배열·slice·map을 실제 DTO와 대조하여 공개 필드 경로로 변환합니다. 이름이 없는 익명 임베딩 구조체는 공개 필드를 평탄화하며, 명시적인 태그 이름이 있으면 그 이름 아래에 배치합니다.
+오류의 `Field`는 `/items/0/email` 같은 JSON Pointer입니다. `~`와 `/`는 각각 `~0`, `~1`로 이스케이프합니다. Go 필드명, 중첩 구조체, 포인터, 배열, slice, map을 실제 DTO와 대조하여 공개 필드 경로로 변환합니다. 이름이 없는 익명 임베딩 구조체는 공개 필드를 평탄화하며, 명시적인 태그 이름이 있으면 그 이름 아래에 배치합니다.
 
-map은 문자열·정수·`encoding.TextMarshaler` 키를 지원합니다. 키에 점이나 대괄호가 있어도 실제 키와 대조합니다. 서로 다른 경로가 같은 native namespace를 만들거나 JSON에 대응할 수 없는 키라면 임의의 경로를 선택하지 않고 처리 오류를 반환합니다. `json:"-"`처럼 공개 입력에서 제외한 필드를 검증해 실패한 경우도 공개 경로가 없으므로 처리 오류입니다. 해당 필드를 검사하지 않으려면 `validate:"-"`를 지정합니다.
+map은 문자열, 정수, `encoding.TextMarshaler` 키를 지원합니다. 키에 점이나 대괄호가 있어도 실제 키와 대조합니다. 서로 다른 경로가 같은 native namespace를 만들거나 JSON에 대응할 수 없는 키라면 임의의 경로를 선택하지 않고 처리 오류를 반환합니다. `json:"-"`처럼 공개 입력에서 제외한 필드를 검증해 실패한 경우도 공개 경로가 없으므로 처리 오류입니다. 해당 필드를 검사하지 않으려면 `validate:"-"`를 지정합니다.
 
-필드 오류는 공개 경로·규칙·설정값 순으로 정렬합니다. 거부된 입력값과 native 오류·패닉의 원문은 공통 오류에 자동으로 복사하지 않습니다. `Param`은 태그나 사용자 규칙이 제공한 설정값입니다. 사용자 규칙도 여기에 입력값을 담지 않아야 합니다.
+필드 오류는 공개 경로, 규칙, 설정값 순으로 정렬합니다. 거부된 입력값과 native 오류, 패닉의 원문은 공통 오류에 자동으로 복사하지 않습니다. `Param`은 태그나 사용자 규칙이 제공한 설정값입니다. 사용자 규칙도 여기에 입력값을 담지 않아야 합니다.
 
 ## 규칙과 옵션
 
