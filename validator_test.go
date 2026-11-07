@@ -310,3 +310,33 @@ func TestDefaultFieldNamesIncludeQueryAndHeaderTags(t *testing.T) {
 		}
 	}
 }
+
+func TestRequestFieldNameMapperDoesNotChangeSharedValidator(t *testing.T) {
+	type DTO struct {
+		UserID int `validate:"required"`
+		Alias  int `query:"UserID" validate:"required"`
+	}
+	validator := newValidator(t)
+	before := errorFields(t, validator.Validate(context.Background(), DTO{}))
+	ctx := contract.WithFieldTags(context.Background(), "query")
+	ctx = contract.WithFieldNameMapper(ctx, func(owner reflect.Type, field reflect.StructField) (string, bool) {
+		if owner != reflect.TypeFor[DTO]() {
+			return "", false
+		}
+		if field.Name == "UserID" {
+			return "userId", true
+		}
+		if field.Name == "Alias" {
+			return "UserID", true
+		}
+		return "", false
+	})
+	fields := errorFields(t, validator.Validate(ctx, DTO{}))
+	if len(fields) != 2 || fields[0].path != "/UserID" || fields[1].path != "/userId" {
+		t.Fatal(fields)
+	}
+	original := errorFields(t, validator.Validate(context.Background(), DTO{}))
+	if !reflect.DeepEqual(before, original) {
+		t.Fatal(original)
+	}
+}

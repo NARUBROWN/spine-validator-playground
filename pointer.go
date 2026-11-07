@@ -1,6 +1,7 @@
 package playground
 
 import (
+	"context"
 	"encoding"
 	"fmt"
 	"reflect"
@@ -11,6 +12,7 @@ import (
 )
 
 type fieldMapper struct {
+	ctx  context.Context
 	root reflect.Value
 	tags []string
 	maps map[mapIdentity]map[string][]reflect.Value
@@ -67,6 +69,11 @@ func (m *fieldMapper) resolvePaths(value reflect.Value, namespace string, tokens
 			}
 			meta := current.Type().Field(index)
 			name, flatten, err := publicName(meta, m.tags)
+			if m.ctx != nil {
+				if mapped, ok := contract.MappedFieldName(m.ctx, current.Type(), meta); ok {
+					name, flatten, err = mapped, false, nil
+				}
+			}
 			if err != nil {
 				return nil, err
 			}

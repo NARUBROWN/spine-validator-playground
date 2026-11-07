@@ -91,7 +91,7 @@ func (v *Validator) Validate(ctx context.Context, value any) (err error) {
 	if selected, ok := contract.FieldTags(ctx); ok {
 		tags = selected
 	}
-	mapper := fieldMapper{root: root, tags: tags}
+	mapper := fieldMapper{root: root, tags: tags, ctx: ctx}
 	for _, failure := range failures {
 		if failure.Tag() == "" {
 			return fmt.Errorf("%w: validation rule is empty", contract.ErrInvalidValidator)

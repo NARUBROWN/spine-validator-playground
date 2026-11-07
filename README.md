@@ -4,7 +4,7 @@
 
 go-playground/validator를 사용하는 Spine DTO 검증 구현입니다. `github.com/NARUBROWN/spine/contract/validator.Validator`를 구현하며, 바인딩한 DTO의 `validate` 태그를 검사하고 필드별 오류를 공통 계약으로 변환합니다.
 
-현재 작업 소스는 Spine `v0.7.0-preview.4`에 고정합니다. 해당 태그의 발행 상태는 코어의 검증 기록에서 확인합니다. 발행 전 소스 검증은 임시 workspace 또는 scripts/verify-local.sh를 사용하고, 실제 공개 조합 검증은 태그 발행 후 수행합니다. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다.
+현재 작업 소스는 Spine `v0.7.0-preview.7` 후보에 고정합니다. 해당 태그의 발행 상태는 코어의 검증 기록에서 확인합니다. 발행 전 소스 검증은 임시 workspace 또는 scripts/verify-local.sh를 사용하고, 실제 공개 조합 검증은 태그 발행 후 수행합니다. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다.
 
 Go 1.26.0 이상과 go-playground/validator v10.30.6을 사용합니다. 공통 계약 식별자는 `spine.validation/v1`입니다.
 
@@ -152,3 +152,9 @@ Spine의 요청 컨텍스트에 `contract/validator.WithFieldTags`가 지정되�
 form을 선택한 호출에서는 태그 없는 중첩 값 구조체도 펼친 폼 필드의 오류 경로를 사용합니다. 고정 배열의 dive 제약은 처리할 위치를 prefixItems로 설명합니다. 길이 제약은 디코딩 후 Go 배열의 고정 길이를 기준으로 판단하고, 원소 제약이 기본값을 거부하면 부족한 요청 원소도 명세에서 거부합니다.
 
 이 변경은 요청별 필드명 계약을 포함한 Spine 개발 버전과 함께 검증해야 합니다. 공개 배포 전에는 해당 코어 버전으로 의존성을 갱신해야 합니다.
+
+## 타입 입력의 외부 필드 이름
+
+다음 소스 후보 `v0.2.0-preview.6`는 코어 `v0.7.0-preview.7`의 요청별 `FieldNameMapper`를 지원합니다. 이 번호는 공개 발행 완료를 뜻하지 않습니다. `input.Path[T]`와 `input.Query[T]`가 태그 없이 정한 `userId` 등의 이름을 검증 오류의 JSON Pointer에도 사용합니다. 실제 DTO 타입과 값, 공유 검증기 설정을 이름 매핑 때문에 변경하지 않습니다.
+
+명시적 source 태그와 익명 임베딩의 필드도 코어의 입력 계획을 따릅니다. 매핑이 없는 기존 호출은 기존 FieldTags 또는 검증기 기본 태그 규칙을 유지합니다. 이 API를 사용하려면 짝이 맞는 코어 후보가 필요하며 공개 태그 지원은 별도로 확인합니다.
