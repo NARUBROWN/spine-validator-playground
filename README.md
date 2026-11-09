@@ -1,8 +1,10 @@
 # spine-validator-playground
 
+> 이 작업 소스의 대상 버전은 `v0.2.0`이며 Preview, RC, 정식 채널로 발행합니다. [릴리스 운영](RELEASING.md)을 확인하세요. 기존 정식 `v0.1.0`은 변경하지 않습니다.
+
 go-playground/validator를 사용하는 Spine DTO 검증 구현입니다. `github.com/NARUBROWN/spine/contract/validator.Validator`를 구현하며, 바인딩한 DTO의 `validate` 태그를 검사하고 필드별 오류를 공통 계약으로 변환합니다.
 
-Spine `v0.6.5`의 `contract/validator`와 `spine.WithValidator`를 사용합니다. 로컬 `replace` 없이 정식 태그에 의존합니다. 기존 v0.6.0 앱은 코어 의존성과 생성식을 함께 갱신하세요.
+현재 작업 소스는 Spine `v0.7.0-preview.7` 후보에 고정합니다. 해당 태그의 발행 상태는 코어의 검증 기록에서 확인합니다. 발행 전 소스 검증은 임시 workspace 또는 scripts/verify-local.sh를 사용하고, 실제 공개 조합 검증은 태그 발행 후 수행합니다. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다.
 
 Go 1.26.0 이상과 go-playground/validator v10.30.6을 사용합니다. 공통 계약 식별자는 `spine.validation/v1`입니다.
 
@@ -38,7 +40,7 @@ type CreateUserDTO struct {
 }
 ```
 
-Spine이 HTTP JSON·폼 DTO 또는 WebSocket·컨슈머 메시지 DTO를 생성한 뒤 검증기를 호출합니다. 이 모듈은 DTO를 직접 바인딩하거나 HTTP 응답·WebSocket 종료·메시지 ACK/NACK을 수행하지 않습니다. 이 전송 정책은 Spine이 소유합니다.
+Spine이 HTTP JSON, 폼 DTO 또는 WebSocket, 컨슈머 메시지 DTO를 생성한 뒤 검증기를 호출합니다. 이 모듈은 DTO를 직접 바인딩하거나 HTTP 응답, WebSocket 종료, 메시지 ACK/NACK을 수행하지 않습니다. 이 전송 정책은 Spine이 소유합니다.
 
 ## 오류 처리
 
@@ -67,20 +69,20 @@ if failure, ok := contract.AsError(err); ok {
 | 정상 DTO | nil |
 | 규칙 위반 | `*contract.Error`. `Field`, `Rule`, `Param`, 일반 설명을 제공 |
 | 구조체나 구조체 포인터가 아닌 값, nil DTO | `contract.ErrInvalidValue`로 감싼 오류 |
-| 잘못된 옵션·태그, 사용자 규칙의 패닉, 공개 경로 매핑 실패 | `contract.ErrInvalidValidator`로 감싼 오류 |
-| context 취소·시간 초과 | `errors.Is`로 원래 context 오류 확인 가능 |
+| 잘못된 옵션, 태그, 사용자 규칙의 패닉, 공개 경로 매핑 실패 | `contract.ErrInvalidValidator`로 감싼 오류 |
+| context 취소, 시간 초과 | `errors.Is`로 원래 context 오류 확인 가능 |
 
-오류의 `Field`는 `/items/0/email` 같은 JSON Pointer입니다. `~`와 `/`는 각각 `~0`, `~1`로 이스케이프합니다. Go 필드명, 중첩 구조체·포인터·배열·slice·map을 실제 DTO와 대조하여 공개 필드 경로로 변환합니다. 이름이 없는 익명 임베딩 구조체는 공개 필드를 평탄화하며, 명시적인 태그 이름이 있으면 그 이름 아래에 배치합니다.
+오류의 `Field`는 `/items/0/email` 같은 JSON Pointer입니다. `~`와 `/`는 각각 `~0`, `~1`로 이스케이프합니다. Go 필드명, 중첩 구조체, 포인터, 배열, slice, map을 실제 DTO와 대조하여 공개 필드 경로로 변환합니다. 이름이 없는 익명 임베딩 구조체는 공개 필드를 평탄화하며, 명시적인 태그 이름이 있으면 그 이름 아래에 배치합니다.
 
-map은 문자열·정수·`encoding.TextMarshaler` 키를 지원합니다. 키에 점이나 대괄호가 있어도 실제 키와 대조합니다. 서로 다른 경로가 같은 native namespace를 만들거나 JSON에 대응할 수 없는 키라면 임의의 경로를 선택하지 않고 처리 오류를 반환합니다. `json:"-"`처럼 공개 입력에서 제외한 필드를 검증해 실패한 경우도 공개 경로가 없으므로 처리 오류입니다. 해당 필드를 검사하지 않으려면 `validate:"-"`를 지정합니다.
+map은 문자열, 정수, `encoding.TextMarshaler` 키를 지원합니다. 키에 점이나 대괄호가 있어도 실제 키와 대조합니다. 서로 다른 경로가 같은 native namespace를 만들거나 JSON에 대응할 수 없는 키라면 임의의 경로를 선택하지 않고 처리 오류를 반환합니다. `json:"-"`처럼 공개 입력에서 제외한 필드를 검증해 실패한 경우도 공개 경로가 없으므로 처리 오류입니다. 해당 필드를 검사하지 않으려면 `validate:"-"`를 지정합니다.
 
-필드 오류는 공개 경로·규칙·설정값 순으로 정렬합니다. 거부된 입력값과 native 오류·패닉의 원문은 공통 오류에 자동으로 복사하지 않습니다. `Param`은 태그나 사용자 규칙이 제공한 설정값입니다. 사용자 규칙도 여기에 입력값을 담지 않아야 합니다.
+필드 오류는 공개 경로, 규칙, 설정값 순으로 정렬합니다. 거부된 입력값과 native 오류, 패닉의 원문은 공통 오류에 자동으로 복사하지 않습니다. `Param`은 태그나 사용자 규칙이 제공한 설정값입니다. 사용자 규칙도 여기에 입력값을 담지 않아야 합니다.
 
 ## 규칙과 옵션
 
 | 옵션 | 동작 |
 | --- | --- |
-| `WithFieldTags("form", "json")` | 공개 이름 태그의 우선순위. 기본은 `json`, `form`. 첫 번째로 존재하는 태그를 사용하며 이름이 비어 있으면 Go 필드명을 사용 |
+| `WithFieldTags("form", "json")` | 공개 이름 태그의 우선순위. 기본은 `json`, `form`, `query`, `header`. 첫 번째로 존재하는 태그를 사용하며 이름이 비어 있으면 Go 필드명을 사용 |
 | `WithValidationTag("check")` | 규칙을 읽을 태그 이름. 기본은 `validate` |
 | `WithRule(name, native.FuncCtx)` | context를 받는 사용자 필드 규칙 등록 |
 | `WithStructRule(native.StructLevelFuncCtx, types...)` | 필드 간 관계와 DTO 전체 규칙 등록. typed nil 포인터는 타입 표시로 사용 가능 |
@@ -130,3 +132,33 @@ MIT. [LICENSE](LICENSE)를 참고하세요.
 ```sh
 go get github.com/NARUBROWN/spine-validator-playground@v0.1.0
 ```
+
+## 런타임 명세용 규칙 설명
+
+`SchemaDescriber`가 포함된 Spine 코어와 함께 사용하면, 이 검증기는 실제 등록 설정에서 JSON Schema 제약을 제공합니다. 호출자는 같은 `playground.New(...)` 인스턴스를 `spine.WithValidator`에 연결하면 됩니다. 별도의 문서 태그나 검증기 등록은 필요하지 않습니다.
+
+`DescribeSchema(reflect.Type)`는 `Validate`나 사용자 규칙을 실행하지 않습니다. `WithValidationTag`를 반영하며 `WithRule`로 덮어쓴 내장 규칙은 내장 제약으로 추론하지 않습니다. `WithStructRule`과 표현하지 못하는 규칙은 `Unresolved`에 남깁니다. 필드는 Go 인덱스로 연결하므로 JSON, 폼 이름은 코어의 바인딩 설명이 결정합니다.
+
+지원 범위는 기본 required, 타입에 따른 min/max, gte/lte, gt/lt, len, oneof, format, 선두 omitempty/omitnil, 컨테이너 dive입니다. format은 일반적인 JSON Schema 형식으로 설명하며 native 검증기의 모든 문법과 판정을 재구현하지 않습니다. dive로 구조체 원소를 검증하면 원소 타입의 별도 설명이 필요하다는 진단을 남깁니다. 조건부, 필드 간, 사용자 정의 규칙과 복합 기본값은 완전히 변환하지 않습니다. 진단이 있는 설명은 부분 명세로 사용합니다.
+
+숫자 required의 0 거부, bool required의 false 거부, 포인터 required의 null 거부를 각각 표현합니다. omitempty와 omitnil의 생략 분기는 값 제약과 별도로 설명합니다. 검증 제외 필드와 dive가 없는 컨테이너 내부에는 중첩 DTO 검증을 임의로 적용하지 않습니다.
+
+개발 변경에서는 별도 쿼리와 헤더 구조체의 오류 필드 이름도 기본 태그 목록에서 선택합니다. 실제 바인딩 출처와 혼합 DTO 제한은 Spine 코어의 입력 규칙을 따릅니다.
+
+## 요청별 필드 이름
+
+Spine의 요청 컨텍스트에 `contract/validator.WithFieldTags`가 지정되면 이번 호출의 외부 이름에 그 태그 순서를 사용합니다. HTTP 바인딩은 json, form, xml, query 또는 header 중 실제 사용한 태그를 선택합니다. 지정하지 않은 호출은 생성 시 설정한 WithFieldTags 기본값을 유지합니다. 요청별 선택은 검증 규칙이나 공유 엔진의 설정을 변경하지 않습니다.
+
+form을 선택한 호출에서는 태그 없는 중첩 값 구조체도 펼친 폼 필드의 오류 경로를 사용합니다. 고정 배열의 dive 제약은 처리할 위치를 prefixItems로 설명합니다. 길이 제약은 디코딩 후 Go 배열의 고정 길이를 기준으로 판단하고, 원소 제약이 기본값을 거부하면 부족한 요청 원소도 명세에서 거부합니다.
+
+이 변경은 요청별 필드명 계약을 포함한 Spine 개발 버전과 함께 검증해야 합니다. 공개 배포 전에는 해당 코어 버전으로 의존성을 갱신해야 합니다.
+
+## 타입 입력의 외부 필드 이름
+
+다음 소스 후보 `v0.2.0-preview.6`는 코어 `v0.7.0-preview.7`의 요청별 `FieldNameMapper`를 지원합니다. 이 번호는 공개 발행 완료를 뜻하지 않습니다. `input.Path[T]`와 `input.Query[T]`가 태그 없이 정한 `userId` 등의 이름을 검증 오류의 JSON Pointer에도 사용합니다. 실제 DTO 타입과 값, 공유 검증기 설정을 이름 매핑 때문에 변경하지 않습니다.
+
+명시적 source 태그와 익명 임베딩의 필드도 코어의 입력 계획을 따릅니다. 매핑이 없는 기존 호출은 기존 FieldTags 또는 검증기 기본 태그 규칙을 유지합니다. 이 API를 사용하려면 짝이 맞는 코어 후보가 필요하며 공개 태그 지원은 별도로 확인합니다.
+
+## 릴리스와 공개 계약
+
+이 플랫폼은 자체 버전과 채널로 발행합니다. `go.mod`의 Spine 버전은 사용하는 공개 계약의 최소 의존성이며 코어 릴리스 채널과 별도로 관리합니다. CI와 공개 설치 검증은 이 모듈의 의존성으로 플랫폼 자체를 검사합니다. 새로운 코어와 기존 플랫폼 태그의 조합 검증은 코어 릴리스에서 수행합니다.

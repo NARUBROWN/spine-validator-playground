@@ -286,3 +286,57 @@ func ExampleNew() {
 	// /age gte
 	// /email email
 }
+
+func TestDefaultFieldNamesIncludeQueryAndHeaderTags(t *testing.T) {
+	v, err := playground.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		value any
+		field string
+	}{
+		{struct {
+			Keyword string `query:"q" validate:"required"`
+		}{}, "/q"},
+		{struct {
+			ID string `header:"X-Request-ID" validate:"required"`
+		}{}, "/X-Request-ID"},
+	} {
+		err := v.Validate(context.Background(), test.value)
+		var failure *contract.Error
+		if !errors.As(err, &failure) || len(failure.Fields) != 1 || failure.Fields[0].Field != test.field {
+			t.Fatalf("출처 태그의 검증 오류 경로: %v", err)
+		}
+	}
+}
+
+func TestRequestFieldNameMapperDoesNotChangeSharedValidator(t *testing.T) {
+	type DTO struct {
+		UserID int `validate:"required"`
+		Alias  int `query:"UserID" validate:"required"`
+	}
+	validator := newValidator(t)
+	before := errorFields(t, validator.Validate(context.Background(), DTO{}))
+	ctx := contract.WithFieldTags(context.Background(), "query")
+	ctx = contract.WithFieldNameMapper(ctx, func(owner reflect.Type, field reflect.StructField) (string, bool) {
+		if owner != reflect.TypeFor[DTO]() {
+			return "", false
+		}
+		if field.Name == "UserID" {
+			return "userId", true
+		}
+		if field.Name == "Alias" {
+			return "UserID", true
+		}
+		return "", false
+	})
+	fields := errorFields(t, validator.Validate(ctx, DTO{}))
+	if len(fields) != 2 || fields[0].path != "/UserID" || fields[1].path != "/userId" {
+		t.Fatal(fields)
+	}
+	original := errorFields(t, validator.Validate(context.Background(), DTO{}))
+	if !reflect.DeepEqual(before, original) {
+		t.Fatal(original)
+	}
+}

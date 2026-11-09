@@ -15,8 +15,11 @@ import (
 // Validator는 생성 시 규칙 등록을 마친 뒤 여러 요청에서 공유하는 검증기입니다.
 // 입력 DTO를 변경하지 않으며, 생성 후 설정을 변경하는 메서드는 제공하지 않습니다.
 type Validator struct {
-	engine    *native.Validate
-	fieldTags []string
+	engine        *native.Validate
+	fieldTags     []string
+	validationTag string
+	customRules   map[string]bool
+	structRules   map[reflect.Type]bool
 }
 
 var _ contract.Validator = (*Validator)(nil)
@@ -31,7 +34,7 @@ func New(options ...Option) (result *Validator, err error) {
 			err = fmt.Errorf("%w: rule configuration panicked", contract.ErrInvalidValidator)
 		}
 	}()
-	config := configuration{fieldTags: []string{"json", "form"}, validationTag: "validate"}
+	config := configuration{fieldTags: []string{"json", "form", "query", "header"}, validationTag: "validate"}
 	for _, option := range options {
 		if option == nil {
 			return nil, fmt.Errorf("%w: option is nil", contract.ErrInvalidValidator)
@@ -47,7 +50,7 @@ func New(options ...Option) (result *Validator, err error) {
 			return nil, fmt.Errorf("%w: rule registration failed", contract.ErrInvalidValidator)
 		}
 	}
-	return &Validator{engine: engine, fieldTags: config.fieldTags}, nil
+	return &Validator{engine: engine, fieldTags: config.fieldTags, validationTag: config.validationTag, customRules: config.customRules, structRules: config.structRules}, nil
 }
 
 // Validate는 바인딩된 DTO의 태그와 사용자 규칙을 실행합니다.
@@ -84,7 +87,11 @@ func (v *Validator) Validate(ctx context.Context, value any) (err error) {
 		return fmt.Errorf("%w: validation engine failed", contract.ErrInvalidValidator)
 	}
 	fields := make([]contract.FieldError, 0, len(failures))
-	mapper := fieldMapper{root: root, tags: v.fieldTags}
+	tags := v.fieldTags
+	if selected, ok := contract.FieldTags(ctx); ok {
+		tags = selected
+	}
+	mapper := fieldMapper{root: root, tags: tags, ctx: ctx}
 	for _, failure := range failures {
 		if failure.Tag() == "" {
 			return fmt.Errorf("%w: validation rule is empty", contract.ErrInvalidValidator)
