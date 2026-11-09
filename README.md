@@ -1,10 +1,19 @@
 # spine-validator-playground
 
-> 이 작업 소스의 대상 버전은 `v0.2.0`이며 Preview, RC, 정식 채널로 발행합니다. [릴리스 운영](RELEASING.md)을 확인하세요. 기존 정식 `v0.1.0`은 변경하지 않습니다.
-
 go-playground/validator를 사용하는 Spine DTO 검증 구현입니다. `github.com/NARUBROWN/spine/contract/validator.Validator`를 구현하며, 바인딩한 DTO의 `validate` 태그를 검사하고 필드별 오류를 공통 계약으로 변환합니다.
 
-현재 작업 소스는 Spine `v0.7.0-preview.7` 후보에 고정합니다. 해당 태그의 발행 상태는 코어의 검증 기록에서 확인합니다. 발행 전 소스 검증은 임시 workspace 또는 scripts/verify-local.sh를 사용하고, 실제 공개 조합 검증은 태그 발행 후 수행합니다. 정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 기술했습니다.
+## Stable 설치
+
+일반 개발과 운영에 사용하는 정식 릴리스 채널입니다. 공개 태그는 [`v0.2.0`](https://github.com/NARUBROWN/spine-validator-playground/tree/v0.2.0)입니다. 이 태그의 `go.mod`는 Spine `v0.7.0-preview.7`와 Go 1.26.0 이상을 지정합니다.
+
+```sh
+go get github.com/NARUBROWN/spine-validator-playground@v0.2.0
+```
+
+다른 채널은 [Preview](https://github.com/NARUBROWN/spine-validator-playground/tree/preview) | [RC](https://github.com/NARUBROWN/spine-validator-playground/tree/rc)에서 확인하세요.
+
+
+정식 `v0.1.0`의 Spine `v0.6.5` 호환 범위는 아래에 별도로 설명합니다.
 
 Go 1.26.0 이상과 go-playground/validator v10.30.6을 사용합니다. 공통 계약 식별자는 `spine.validation/v1`입니다.
 
@@ -13,7 +22,7 @@ Go 1.26.0 이상과 go-playground/validator v10.30.6을 사용합니다. 공통 
 외부 구현의 Go 패키지 이름은 `playground`입니다.
 
 ```sh
-go get github.com/NARUBROWN/spine-validator-playground
+go get github.com/NARUBROWN/spine-validator-playground@v0.2.0
 ```
 
 ```go
@@ -155,9 +164,9 @@ form을 선택한 호출에서는 태그 없는 중첩 값 구조체도 펼친 �
 
 ## 타입 입력의 외부 필드 이름
 
-다음 소스 후보 `v0.2.0-preview.6`는 코어 `v0.7.0-preview.7`의 요청별 `FieldNameMapper`를 지원합니다. 이 번호는 공개 발행 완료를 뜻하지 않습니다. `input.Path[T]`와 `input.Query[T]`가 태그 없이 정한 `userId` 등의 이름을 검증 오류의 JSON Pointer에도 사용합니다. 실제 DTO 타입과 값, 공유 검증기 설정을 이름 매핑 때문에 변경하지 않습니다.
+요청별 `FieldNameMapper`는 외부 입력 이름을 검증 오류의 JSON Pointer에 사용합니다. `input.Path[T]`와 `input.Query[T]`가 태그 없이 정한 `userId` 같은 이름도 포함합니다. 실제 DTO 타입과 값, 공유 검증기 설정은 유지합니다.
 
-명시적 source 태그와 익명 임베딩의 필드도 코어의 입력 계획을 따릅니다. 매핑이 없는 기존 호출은 기존 FieldTags 또는 검증기 기본 태그 규칙을 유지합니다. 이 API를 사용하려면 짝이 맞는 코어 후보가 필요하며 공개 태그 지원은 별도로 확인합니다.
+명시적 source 태그와 익명 임베딩의 필드도 코어의 입력 계획을 따릅니다. 매핑이 없는 기존 호출은 기존 FieldTags 또는 검증기 기본 태그 규칙을 유지합니다. 설치 표에서 선택한 플랫폼 태그의 코어 의존성을 확인하세요.
 
 ## 릴리스와 공개 계약
 
