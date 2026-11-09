@@ -1,6 +1,7 @@
 package playground
 
 import (
+	"context"
 	"encoding"
 	"fmt"
 	"reflect"
@@ -11,6 +12,7 @@ import (
 )
 
 type fieldMapper struct {
+	ctx  context.Context
 	root reflect.Value
 	tags []string
 	maps map[mapIdentity]map[string][]reflect.Value
@@ -67,6 +69,11 @@ func (m *fieldMapper) resolvePaths(value reflect.Value, namespace string, tokens
 			}
 			meta := current.Type().Field(index)
 			name, flatten, err := publicName(meta, m.tags)
+			if m.ctx != nil {
+				if mapped, ok := contract.MappedFieldName(m.ctx, current.Type(), meta); ok {
+					name, flatten, err = mapped, false, nil
+				}
+			}
 			if err != nil {
 				return nil, err
 			}
@@ -161,7 +168,8 @@ func publicName(field reflect.StructField, tags []string) (name string, flatten 
 	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
-	return field.Name, field.Anonymous && t.Kind() == reflect.Struct, nil
+	formValue := len(tags) == 1 && tags[0] == "form" && field.Type.Kind() == reflect.Struct
+	return field.Name, t.Kind() == reflect.Struct && (field.Anonymous || formValue), nil
 }
 
 func mapKeyName(key reflect.Value) (string, error) {
