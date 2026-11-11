@@ -4,10 +4,10 @@ go-playground/validator를 사용하는 Spine DTO 검증 구현입니다. `githu
 
 ## Preview 설치
 
-개발 중인 기능을 시험하고 호환성 문제를 확인하는 채널입니다. 공개 태그는 [`v0.2.0-preview.7`](https://github.com/NARUBROWN/spine-validator-playground/tree/v0.2.0-preview.7)입니다. 이 태그의 `go.mod`는 Spine `v0.7.0-preview.7`와 Go 1.26.0 이상을 지정합니다.
+개발 중인 기능을 시험하고 호환성 문제를 확인하는 채널입니다. 공개 태그는 [`v0.2.0-preview.7`](https://github.com/NARUBROWN/spine-validator-playground/tree/v0.2.0-preview.7)입니다. 이 태그의 `go.mod`는 Spine `v0.7.0-preview.7`와 Go 1.26.0 이상을 지정합니다. 이 브랜치의 릴리스 정책 기준 버전은 `v0.2.0`입니다.
 
 ```sh
-go get github.com/NARUBROWN/spine-validator-playground@v0.2.0-preview.7-preview.7
+go get github.com/NARUBROWN/spine-validator-playground@v0.2.0-preview.7
 ```
 
 다른 채널은 [RC](https://github.com/NARUBROWN/spine-validator-playground/tree/rc) | [Stable](https://github.com/NARUBROWN/spine-validator-playground/tree/main)에서 확인하세요.
