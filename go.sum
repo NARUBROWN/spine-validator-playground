@@ -1,5 +1,5 @@
-github.com/NARUBROWN/spine v0.7.0-preview.7 h1:evj7QrFDIX+/u18Y1geM2BXvxSu0DQ6dwAJUEvdpD7U=
-github.com/NARUBROWN/spine v0.7.0-preview.7/go.mod h1:A0JJcUelvcyn3DW+VkSTHJfvKBegrMNKfXCq8tbiXJ4=
+github.com/NARUBROWN/spine v0.7.6-preview.1 h1:PSCaacXEMBctks1r9xwCkbUNDb8pj5ep/396U5RXsLs=
+github.com/NARUBROWN/spine v0.7.6-preview.1/go.mod h1:ieBb5zN8fi7NastxyIyNGKHVanRa15XQ8CROJdciXPE=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gabriel-vasile/mimetype v1.4.16 h1:5izNFuvA37st1dDRAcA7TtmngBmRgiIPDmTtiEvjx1E=
