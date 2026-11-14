@@ -56,7 +56,10 @@ func (v *Validator) DescribeSchema(t reflect.Type) (contract.SchemaDescription, 
 			if f.Type.Kind() == reflect.Struct && !f.Anonymous && tag == "" {
 				result.Unresolved = append(result.Unresolved, current.String()+"."+f.Name+": implicit nested validation presence")
 			}
-			constraint, required, skip, unresolved := v.fieldSchema(f.Type, tag)
+			fieldTag, conditional, issues := v.conditionalRules(current, f, prefix, tag)
+			result.ConditionalRequired = append(result.ConditionalRequired, conditional...)
+			constraint, required, skip, unresolved := v.fieldSchema(f.Type, fieldTag)
+			unresolved = append(unresolved, issues...)
 			for _, rule := range unresolved {
 				result.Unresolved = append(result.Unresolved, current.String()+"."+f.Name+": "+rule)
 			}
